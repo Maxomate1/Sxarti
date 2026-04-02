@@ -14,7 +14,7 @@ export default function OnboardingLayout({
       {/* Progress indicator placeholder */}
       <div className="mb-8 h-1 w-full max-w-2xl rounded-full bg-surface-container-high" />
 
-      <div className="w-full max-w-2xl px-4">{children}</div>
+      <div className="w-full max-w-6xl px-4">{children}</div>
     </div>
   );
 }

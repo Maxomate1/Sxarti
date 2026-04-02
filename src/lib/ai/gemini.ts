@@ -58,6 +58,7 @@ const responseSchema = {
               "set_delivery_zone",
               "flag_problematic",
               "send_product_images",
+              "add_bundle_to_cart",
             ],
           },
           stage: { type: SchemaType.STRING, nullable: true },
@@ -65,6 +66,7 @@ const responseSchema = {
           quantity: { type: SchemaType.NUMBER, nullable: true },
           reason: { type: SchemaType.STRING, nullable: true },
           delivery_zone_id: { type: SchemaType.STRING, nullable: true },
+          bundle_id: { type: SchemaType.STRING, nullable: true },
           customer_info: {
             type: SchemaType.OBJECT,
             nullable: true,

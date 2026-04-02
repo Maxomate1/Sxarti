@@ -10,6 +10,14 @@ import {
   Edit2,
   MapPin,
   ArrowLeft,
+  ArrowRight,
+  Plus,
+  Truck,
+  Clock,
+  Coins,
+  Package,
+  Zap,
+  X,
 } from "lucide-react";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useTenant } from "@/hooks/use-tenant";
@@ -255,9 +263,21 @@ export default function Step4Page() {
 
   if (loading || zonesLoading) {
     return (
-      <div className="space-y-4 pb-32">
-        <Skeleton className="mx-auto h-8 w-64" />
-        <Skeleton className="h-[400px] w-full" />
+      <div className="space-y-6 pb-32">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="space-y-6 lg:col-span-8">
+            <Skeleton className="h-[220px] rounded-2xl" />
+            <Skeleton className="h-[320px] rounded-2xl" />
+          </div>
+          <div className="space-y-6 lg:col-span-4">
+            <Skeleton className="h-[180px] rounded-2xl" />
+            <Skeleton className="h-[240px] rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -290,93 +310,146 @@ export default function Step4Page() {
   );
 
   return (
-    <div className="space-y-6 pb-32">
-      {/* Progress Stepper */}
-      <div className="flex items-center justify-between">
-        {STEPS.map((step, i) => (
-          <div key={step.num} className="flex items-center">
-            <div className="flex flex-col items-center">
-              <div
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors",
-                  step.num < CURRENT_STEP
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : step.num === CURRENT_STEP
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-muted-foreground/30 text-muted-foreground",
-                )}
-              >
-                {step.num < CURRENT_STEP ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  step.num
-                )}
+    <div className="animate-fade-in-up space-y-8 pb-36">
+      {/* ── Progress Stepper ── */}
+      <nav className="mx-auto w-full max-w-xl">
+        <div className="flex items-center justify-between">
+          {STEPS.map((step, i) => (
+            <div key={step.num} className="flex items-center">
+              <div className="flex flex-col items-center gap-1.5">
+                <div
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300",
+                    step.num < CURRENT_STEP
+                      ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/25"
+                      : step.num === CURRENT_STEP
+                        ? "bg-on-surface text-white shadow-lg shadow-on-surface/20"
+                        : "bg-surface-container-high text-muted-foreground",
+                  )}
+                >
+                  {step.num < CURRENT_STEP ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    step.num
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    "text-[10px] font-medium tracking-wide",
+                    step.num === CURRENT_STEP
+                      ? "font-bold text-on-surface"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {step.label}
+                </span>
               </div>
-              <span
-                className={cn(
-                  "mt-1 text-[10px]",
-                  step.num === CURRENT_STEP
-                    ? "font-bold text-on-surface"
-                    : "text-muted-foreground",
-                )}
-              >
-                {step.label}
-              </span>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={cn(
+                    "mx-2 h-[2px] w-6 rounded-full sm:w-10",
+                    step.num < CURRENT_STEP
+                      ? "bg-emerald-500"
+                      : "bg-surface-container-high",
+                  )}
+                />
+              )}
             </div>
-            {i < STEPS.length - 1 && (
-              <div
-                className={cn(
-                  "mx-1 h-0.5 w-8 sm:w-12",
-                  step.num < CURRENT_STEP
-                    ? "bg-primary"
-                    : "bg-muted-foreground/30",
-                )}
-              />
-            )}
+          ))}
+        </div>
+      </nav>
+
+      {/* ── Page Header ── */}
+      <header className="space-y-3">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-on-surface shadow-lg shadow-on-surface/10">
+            <Truck className="h-6 w-6 text-white" />
           </div>
-        ))}
-      </div>
+          <div>
+            <h1 className="font-georgian text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">
+              მიტანის ზონები
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              განსაზღვრეთ სად მიაწვდით პროდუქტებს და რა ღირს მიტანა
+            </p>
+          </div>
+        </div>
+      </header>
 
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-on-surface">
-          მიტანის ზონები
-        </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          განსაზღვრეთ სად მიაწვდით პროდუქტებს და რა ღირს მიტანა
-        </p>
-      </div>
-
-      {/* Two Column Layout */}
+      {/* ── Two Column Layout ── */}
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-        {/* Left Column */}
+        {/* ── Left Column ── */}
         <div className="space-y-8 lg:col-span-8">
-          {/* Add Zone Form — Always Visible */}
-          <section className="rounded-xl border-none bg-white p-6 shadow-[0_20px_40px_rgba(11,28,48,0.03)]">
-            <h3 className="mb-6 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              {editingId ? "ზონის რედაქტირება" : "ახალი ზონის დამატება"}
-            </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="space-y-1.5">
-                <label className="ml-1 text-[13px] font-semibold text-muted-foreground">
+          {/* Add / Edit Zone Form */}
+          <section
+            className={cn(
+              "relative overflow-hidden rounded-2xl border border-outline-variant/30 bg-white p-7 shadow-ambient-sm transition-all duration-300",
+              editingId && "ring-2 ring-primary/30",
+            )}
+          >
+            {/* Decorative corner accent */}
+            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/[0.04]" />
+
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-lg",
+                    editingId
+                      ? "bg-amber-100 text-amber-600"
+                      : "bg-primary/10 text-primary",
+                  )}
+                >
+                  {editingId ? (
+                    <Edit2 className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </div>
+                <h3 className="text-sm font-bold text-on-surface">
+                  {editingId ? "ზონის რედაქტირება" : "ახალი ზონის დამატება"}
+                </h3>
+              </div>
+              {editingId && (
+                <button
+                  onClick={resetForm}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-container-high hover:text-on-surface"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              {/* Zone Name */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <MapPin className="h-3 w-3" />
                   ზონის სახელი
                 </label>
                 <input
                   type="text"
                   value={zoneName}
                   onChange={(e) => setZoneName(e.target.value)}
-                  placeholder="მაგ: თბილისი (ცენტრი)"
-                  className="w-full rounded-lg border-none bg-surface-container-low px-4 py-3 transition-all placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary"
+                  placeholder="მაგ: თბილისი"
+                  className={cn(
+                    "w-full rounded-xl border-2 border-transparent bg-surface-container-low px-4 py-3 text-sm font-medium text-on-surface transition-all placeholder:text-muted-foreground/40 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10",
+                    formErrors.zone_name &&
+                      "border-destructive/50 bg-destructive/5",
+                  )}
                 />
                 {formErrors.zone_name && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-[11px] font-medium text-destructive">
                     {formErrors.zone_name}
                   </p>
                 )}
               </div>
-              <div className="space-y-1.5">
-                <label className="ml-1 text-[13px] font-semibold text-muted-foreground">
-                  მიტანის საფასური
+
+              {/* Fee */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Coins className="h-3 w-3" />
+                  საფასური
                 </label>
                 <div className="relative">
                   <input
@@ -384,19 +457,28 @@ export default function Step4Page() {
                     step="0.01"
                     value={fee}
                     onChange={(e) => setFee(e.target.value)}
-                    placeholder="0"
-                    className="w-full rounded-lg border-none bg-surface-container-low px-4 py-3 pr-8 transition-all focus:ring-2 focus:ring-primary"
+                    placeholder="0.00"
+                    className={cn(
+                      "w-full rounded-xl border-2 border-transparent bg-surface-container-low px-4 py-3 pr-10 text-sm font-medium text-on-surface transition-all placeholder:text-muted-foreground/40 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10",
+                      formErrors.fee &&
+                        "border-destructive/50 bg-destructive/5",
+                    )}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-medium text-muted-foreground">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground/50">
                     ₾
                   </span>
                 </div>
                 {formErrors.fee && (
-                  <p className="text-xs text-destructive">{formErrors.fee}</p>
+                  <p className="text-[11px] font-medium text-destructive">
+                    {formErrors.fee}
+                  </p>
                 )}
               </div>
-              <div className="space-y-1.5">
-                <label className="ml-1 text-[13px] font-semibold text-muted-foreground">
+
+              {/* Estimated Days */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Clock className="h-3 w-3" />
                   სავარაუდო ვადა
                 </label>
                 <input
@@ -404,38 +486,54 @@ export default function Step4Page() {
                   value={estimatedDays}
                   onChange={(e) => setEstimatedDays(e.target.value)}
                   placeholder="მაგ: 2-3 დღე"
-                  className="w-full rounded-lg border-none bg-surface-container-low px-4 py-3 transition-all placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary"
+                  className={cn(
+                    "w-full rounded-xl border-2 border-transparent bg-surface-container-low px-4 py-3 text-sm font-medium text-on-surface transition-all placeholder:text-muted-foreground/40 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10",
+                    formErrors.estimated_days &&
+                      "border-destructive/50 bg-destructive/5",
+                  )}
                 />
                 {formErrors.estimated_days && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-[11px] font-medium text-destructive">
                     {formErrors.estimated_days}
                   </p>
                 )}
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-2">
+
+            <div className="mt-6 flex justify-end gap-3">
               {editingId && (
                 <button
                   onClick={resetForm}
-                  className="rounded-xl px-6 py-3 font-bold text-muted-foreground transition-all hover:bg-surface-container-low"
+                  className="rounded-xl px-5 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-surface-container-low hover:text-on-surface"
                 >
                   გაუქმება
                 </button>
               )}
               <button
                 onClick={handleAddOrUpdate}
-                className="rounded-xl bg-gradient-to-r from-primary to-[#7531e6] px-8 py-3 font-bold text-white shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex items-center gap-2 rounded-xl bg-on-surface px-7 py-2.5 text-sm font-bold text-white shadow-lg shadow-on-surface/15 transition-all hover:shadow-xl hover:shadow-on-surface/20 active:scale-[0.97]"
               >
-                {editingId ? "განახლება" : "დამატება"}
+                {editingId ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    განახლება
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    დამატება
+                  </>
+                )}
               </button>
             </div>
           </section>
 
           {/* Quick Suggestions */}
           {availableSuggestions.length > 0 && (
-            <section>
-              <div className="mb-4 flex items-center gap-3">
-                <span className="text-sm font-bold text-muted-foreground">
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Zap className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   სწრაფი დამატება
                 </span>
               </div>
@@ -444,162 +542,268 @@ export default function Step4Page() {
                   <button
                     key={suggestion.zone_name}
                     onClick={() => handleQuickAdd(suggestion)}
-                    className="rounded-full border border-transparent bg-surface-container px-4 py-2 text-sm font-medium text-primary transition-colors hover:border-muted-foreground/20 hover:bg-surface-container-high"
+                    className="group flex items-center gap-2 rounded-xl border border-outline-variant/20 bg-white px-4 py-2.5 text-sm transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.97]"
                   >
-                    {suggestion.zone_name} · {suggestion.fee}₾ ·{" "}
-                    {suggestion.estimated_days}
+                    <span className="font-semibold text-on-surface">
+                      {suggestion.zone_name}
+                    </span>
+                    <span className="text-muted-foreground/60">·</span>
+                    <span className="font-medium text-muted-foreground">
+                      {suggestion.fee}₾
+                    </span>
+                    <span className="text-muted-foreground/60">·</span>
+                    <span className="text-xs text-muted-foreground">
+                      {suggestion.estimated_days}
+                    </span>
+                    <Plus className="ml-1 h-3.5 w-3.5 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
                   </button>
                 ))}
               </div>
             </section>
           )}
 
-          {/* Zones Table */}
-          <section className="overflow-hidden rounded-xl bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-muted-foreground/10 bg-surface-container-low/50 px-6 py-4">
-              <span className="text-sm font-bold text-on-surface">
+          {/* Zones List — Card-based instead of table */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-on-surface">
                 არსებული ზონები
-              </span>
-              <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                {activeZones.length} აქტიური
-              </span>
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  {activeZones.length} აქტიური
+                </span>
+              </div>
             </div>
+
             {zones.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="border-b border-muted-foreground/5">
-                      <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        ზონა
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        საფასური
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        ვადა
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        მოქმედებები
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-muted-foreground/5">
-                    {zones.map((zone) => (
-                      <tr
-                        key={zone.id}
-                        className="group transition-colors hover:bg-surface-container-low/30"
-                      >
-                        <td className="px-6 py-4 text-sm font-bold text-on-surface">
-                          {zone.zone_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-muted-foreground">
-                          {formatGEL(zone.fee)}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-muted-foreground">
-                          {zone.estimated_days || "—"}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => startEdit(zone)}
-                              className="rounded-lg p-2 text-primary transition-colors hover:bg-surface-container-high"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(zone.id)}
-                              className="rounded-lg p-2 text-destructive transition-colors hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+              <div className="space-y-3">
+                {zones.map((zone, idx) => (
+                  <div
+                    key={zone.id}
+                    className="group relative overflow-hidden rounded-2xl border border-outline-variant/20 bg-white p-5 shadow-ambient-sm transition-all duration-200 hover:border-outline-variant/40 hover:shadow-ambient"
+                    style={{
+                      animationDelay: `${idx * 60}ms`,
+                    }}
+                  >
+                    {/* Active indicator line */}
+                    {zone.is_active && (
+                      <div className="absolute bottom-0 left-0 top-0 w-[3px] rounded-r-full bg-emerald-500" />
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-5">
+                        {/* Zone icon */}
+                        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-surface-container text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                          <MapPin className="h-5 w-5" />
+                        </div>
+
+                        {/* Zone details */}
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-on-surface">
+                            {zone.zone_name}
+                          </h4>
+                          <div className="mt-1 flex items-center gap-3">
+                            <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Coins className="h-3 w-3" />
+                              {formatGEL(zone.fee)}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                            <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {zone.estimated_days || "—"}
+                            </span>
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          onClick={() => startEdit(zone)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                          title="რედაქტირება"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(zone.id)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+                          title="წაშლა"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <p className="py-12 text-center text-sm text-muted-foreground">
-                ჯერ ზონები არ არის დამატებული
-              </p>
+              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/30 bg-surface-container-low/30 py-16">
+                <Package className="h-10 w-10 text-muted-foreground/30" />
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  ჯერ ზონები არ არის დამატებული
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/60">
+                  დაამატეთ ზონა ფორმის საშუალებით ან სწრაფი დამატებით
+                </p>
+              </div>
             )}
           </section>
         </div>
 
-        {/* Right Sidebar */}
-        <aside className="sticky top-24 lg:col-span-4">
+        {/* ── Right Sidebar ── */}
+        <aside className="sticky top-24 space-y-6 lg:col-span-4">
           {/* AI Tip Card */}
-          <div className="rounded-xl border-l-4 border-[#7531e6] bg-purple-50/60 p-6 shadow-sm backdrop-blur-md">
-            <div className="mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#7531e6]" />
-              <h4 className="font-bold text-purple-900">ჭკვიანი რჩევა</h4>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50/80 to-yellow-50/60 p-6 shadow-ambient-sm">
+            {/* Decorative blob */}
+            <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-200/30 blur-2xl" />
+
+            <div className="relative">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="flex h-8 w-8 animate-float items-center justify-center rounded-lg bg-amber-500/15">
+                  <Sparkles className="h-4 w-4 text-amber-600" />
+                </div>
+                <h4 className="text-sm font-bold text-amber-900">
+                  ჭკვიანი რჩევა
+                </h4>
+              </div>
+              <p className="text-[13px] leading-relaxed text-amber-800/80">
+                მომხმარებლების 70% უპირატესობას ანიჭებს უფასო მიტანას. განიხილეთ
+                &ldquo;უფასო მიტანა 100₾-დან&rdquo; აქციის დამატება კონვერტაციის
+                გასაზრდელად.
+              </p>
             </div>
-            <p className="text-sm leading-relaxed text-purple-800/80">
-              მომხმარებლების 70% უპირატესობას ანიჭებს უფასო მიტანას. განიხილეთ
-              &ldquo;უფასო მიტანა 100₾-დან&rdquo; აქციის დამატება კონვერტაციის
-              გასაზრდელად.
-            </p>
           </div>
 
-          {/* Logistics Map Placeholder */}
-          <div className="mt-6 space-y-4 rounded-xl bg-white p-6 shadow-sm">
-            <h4 className="text-sm font-bold text-on-surface">
-              ლოგისტიკის რუკა
+          {/* Coverage Summary */}
+          <div className="rounded-2xl border border-outline-variant/20 bg-white p-6 shadow-ambient-sm">
+            <h4 className="mb-4 text-sm font-bold text-on-surface">
+              ლოგისტიკის მიმოხილვა
             </h4>
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-surface-container">
-              <div className="flex h-full w-full items-center justify-center">
-                <MapPin className="h-16 w-16 text-muted-foreground/20" />
+
+            <div className="space-y-4">
+              {/* Visual stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-surface-container-low/80 p-3.5 text-center">
+                  <p className="text-2xl font-bold text-on-surface">
+                    {zones.length}
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+                    ზონა
+                  </p>
+                </div>
+                <div className="rounded-xl bg-surface-container-low/80 p-3.5 text-center">
+                  <p className="text-2xl font-bold text-on-surface">
+                    {zones.length > 0
+                      ? formatGEL(Math.min(...zones.map((z) => z.fee)))
+                      : "—"}
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+                    მინ. ტარიფი
+                  </p>
+                </div>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="rounded-full bg-primary px-3 py-1 text-[10px] font-bold text-white shadow-lg">
-                  აქტიური ზონები
-                </span>
+
+              {/* Visual map placeholder */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface-container-low via-surface-container to-surface-container-high p-6">
+                {/* Decorative circles representing zones */}
+                <div className="relative mx-auto h-32 w-full">
+                  {/* Georgia map silhouette — abstract dots */}
+                  <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-muted-foreground/15" />
+                  <div className="absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-muted-foreground/10" />
+
+                  {/* Active zone dots */}
+                  {zones.slice(0, 5).map((zone, i) => {
+                    const positions = [
+                      { top: "45%", left: "50%" },
+                      { top: "35%", left: "35%" },
+                      { top: "55%", left: "25%" },
+                      { top: "30%", left: "65%" },
+                      { top: "65%", left: "55%" },
+                    ];
+                    const pos = positions[i];
+                    return (
+                      <div
+                        key={zone.id}
+                        className="absolute flex flex-col items-center"
+                        style={{
+                          top: pos.top,
+                          left: pos.left,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      >
+                        <div className="relative">
+                          <div className="h-3 w-3 rounded-full bg-primary shadow-md shadow-primary/30" />
+                          <div className="absolute inset-0 animate-pulse-ring rounded-full bg-primary/30" />
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Center label */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <MapPin className="h-6 w-6 text-muted-foreground/20" />
+                  </div>
+                </div>
+
+                <div className="mt-2 text-center">
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] font-bold text-muted-foreground shadow-sm backdrop-blur-sm">
+                    {activeZones.length} აქტიური ზონა
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </aside>
       </div>
 
-      {/* Fixed Bottom Navigation */}
-      <footer className="fixed bottom-0 left-0 z-50 w-full border-t border-muted-foreground/10 bg-white/80 px-6 py-6 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
+      {/* ── Fixed Bottom Navigation ── */}
+      <footer className="fixed bottom-0 left-0 z-50 w-full border-t border-outline-variant/20 bg-white/90 px-6 py-4 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
           <button
             onClick={() => router.push("/step-3")}
-            className="flex items-center gap-2 rounded-lg px-4 py-2 font-bold text-muted-foreground transition-colors hover:text-primary"
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-muted-foreground transition-all hover:bg-surface-container-low hover:text-on-surface"
           >
             <ArrowLeft className="h-4 w-4" />
             უკან
           </button>
 
-          <div className="hidden flex-col items-center gap-1 md:flex">
-            <p className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/70">
+          <div className="hidden flex-col items-center gap-0.5 md:flex">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/50">
               შემდეგი ნაბიჯი
             </p>
-            <p className="text-xs text-muted-foreground">გადახდის დეტალები</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              გადახდის დეტალები
+            </p>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-5">
             <span
               className={cn(
                 "hidden items-center gap-1.5 text-xs font-semibold sm:inline-flex",
                 zones.length > 0 ? "text-emerald-600" : "text-muted-foreground",
               )}
             >
-              {zones.length > 0 && <Check className="h-3.5 w-3.5" />}
+              {zones.length > 0 && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100">
+                  <Check className="h-2.5 w-2.5" />
+                </span>
+              )}
               მინიმუმ 1 ზონა აუცილებელია
             </span>
             <button
               onClick={() => router.push("/step-5")}
               disabled={zones.length === 0}
               className={cn(
-                "rounded-xl px-10 py-3 font-bold shadow-xl transition-all",
+                "flex items-center gap-2 rounded-xl px-8 py-3 text-sm font-bold shadow-lg transition-all",
                 zones.length > 0
-                  ? "bg-gradient-to-r from-primary to-[#7531e6] text-white shadow-primary/20 hover:scale-105 active:scale-95"
+                  ? "bg-on-surface text-white shadow-on-surface/15 hover:shadow-xl hover:shadow-on-surface/20 active:scale-[0.97]"
                   : "cursor-not-allowed bg-muted text-muted-foreground shadow-none",
               )}
             >
               გაგრძელება
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>

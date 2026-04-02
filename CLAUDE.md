@@ -22,11 +22,11 @@ Sxarti — AI-powered sales automation SaaS for Georgian small businesses. Custo
 
 ### Accounts & Infrastructure
 
-- **GitHub:** `matiashvilibeji-svg` (SSH alias: `github-svg`)
-- **Remote:** `git@github-svg:matiashvilibeji-svg/Sxarti.git`
-- **Supabase Project ID:** `ablvormhhqcjuoczlzng`
-- **Supabase URL:** `https://ablvormhhqcjuoczlzng.supabase.co`
-- Always use project ID `ablvormhhqcjuoczlzng` when calling Supabase MCP tools
+- **GitHub:** `Maxomate1` (SSH alias: `github-maxomate`)
+- **Remote:** `git@github-maxomate:Maxomate1/Sxarti.git`
+- **Supabase Project ID:** `nnxyvwkgaybthqpebjek`
+- **Supabase URL:** `https://nnxyvwkgaybthqpebjek.supabase.co`
+- Always use project ID `nnxyvwkgaybthqpebjek` when calling Supabase MCP tools
 
 ### Git
 

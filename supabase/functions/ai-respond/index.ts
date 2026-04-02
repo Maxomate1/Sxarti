@@ -270,7 +270,7 @@ ${filteredFaqs.length > 0 ? `ხშირი კითხვები (FAQ):\n${
     }));
 
     // Call Gemini API
-    const geminiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+    const geminiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiKey) {
       return new Response(
         JSON.stringify({ error: "Gemini API key not configured" }),
