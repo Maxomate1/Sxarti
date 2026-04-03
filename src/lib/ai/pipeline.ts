@@ -377,6 +377,10 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
   }
 
   // 11. Execute actions
+  console.log(
+    `[Bot] Conv ${typedConv.id} | Stage: ${typedConv.current_stage} | Actions: ${JSON.stringify(response.actions.map((a) => a.type))}`,
+  );
+
   let updatedCart = [...typedConv.cart];
   let updatedStage = typedConv.current_stage as ConversationStage;
   let conversationUpdate: Record<string, unknown> = {};
@@ -525,7 +529,10 @@ async function executeAction(
     }
 
     case "create_order": {
-      if (ctx.updatedCart.length === 0) break;
+      if (ctx.updatedCart.length === 0) {
+        console.warn("[Bot] create_order skipped: cart is empty");
+        break;
+      }
 
       const customerInfo = ctx.conversation.customer_info;
       if (
@@ -533,6 +540,9 @@ async function executeAction(
         !customerInfo?.phone ||
         !customerInfo?.address
       ) {
+        console.warn(
+          `[Bot] create_order skipped: missing customer info — name: ${!!customerInfo?.name}, phone: ${!!customerInfo?.phone}, address: ${!!customerInfo?.address}`,
+        );
         break;
       }
 
