@@ -1,6 +1,31 @@
 const GRAPH_API = "https://graph.facebook.com/v19.0";
 const MAX_MESSAGE_LENGTH = 2000;
 
+export interface FacebookUserProfile {
+  first_name?: string;
+  last_name?: string;
+}
+
+/**
+ * Fetch a user's public profile (first_name, last_name) from the Facebook Graph API.
+ * Returns null on any error so it never blocks the conversation flow.
+ */
+export async function getUserProfile(
+  pageAccessToken: string,
+  userId: string,
+): Promise<FacebookUserProfile | null> {
+  try {
+    const response = await fetch(
+      `${GRAPH_API}/${userId}?fields=first_name,last_name&access_token=${pageAccessToken}`,
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data as FacebookUserProfile;
+  } catch {
+    return null;
+  }
+}
+
 function splitMessage(text: string, maxLen: number): string[] {
   if (text.length <= maxLen) return [text];
 

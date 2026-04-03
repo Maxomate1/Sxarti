@@ -6,6 +6,7 @@ import { isValidTransition, type ConversationStage } from "./prompts/stages";
 import {
   sendMessageWithRetry,
   sendImageWithRetry,
+  getUserProfile,
 } from "@/lib/facebook/messenger";
 import {
   sendInstagramMessageWithRetry,
@@ -48,6 +49,8 @@ export interface IncomingMessage {
   platformMessageId?: string;
   attachments?: IncomingAttachment[];
 }
+
+const DEBOUNCE_MS = 2500;
 
 function generateOrderNumber(): string {
   const num = Math.floor(10000 + Math.random() * 90000);
@@ -102,7 +105,31 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
     .single();
 
   // 4. Check status — if completed/abandoned or no conversation, create new
+  let isNewConversation = false;
   if (!conversation) {
+    isNewConversation = true;
+
+    // Fetch customer profile from platform API (non-blocking)
+    let customerName: string | null = null;
+    let customerInfo: Record<string, string> | null = null;
+
+    if (
+      incoming.platform === "messenger" &&
+      typedTenant.facebook_access_token
+    ) {
+      const profile = await getUserProfile(
+        typedTenant.facebook_access_token,
+        incoming.platformUserId,
+      );
+      if (profile) {
+        const parts = [profile.first_name, profile.last_name].filter(Boolean);
+        if (parts.length > 0) {
+          customerName = parts.join(" ");
+          customerInfo = { name: customerName };
+        }
+      }
+    }
+
     const { data: newConv, error: convError } = await supabase
       .from("conversations")
       .insert({
@@ -112,7 +139,8 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
         status: "active",
         current_stage: "greeting",
         cart: [],
-        customer_info: null,
+        customer_name: customerName,
+        customer_info: customerInfo,
         last_message_at: new Date().toISOString(),
       })
       .select()
@@ -156,14 +184,37 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
   }
 
   // 5. Store customer message
-  await supabase.from("messages").insert({
-    conversation_id: typedConv.id,
-    tenant_id: typedTenant.id,
-    sender: "customer",
-    content: incoming.messageText,
-    platform_message_id: incoming.platformMessageId ?? null,
-    attachments: storedAttachments,
-  });
+  const { data: insertedMsg } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: typedConv.id,
+      tenant_id: typedTenant.id,
+      sender: "customer",
+      content: incoming.messageText,
+      platform_message_id: incoming.platformMessageId ?? null,
+      attachments: storedAttachments,
+    })
+    .select("id, created_at")
+    .single();
+
+  // 5b. Debounce — wait for rapid-fire messages to settle before calling AI
+  await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS));
+
+  // Check if a newer customer message arrived during the wait
+  if (insertedMsg) {
+    const { data: newerMessages } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("conversation_id", typedConv.id)
+      .eq("sender", "customer")
+      .gt("created_at", insertedMsg.created_at)
+      .limit(1);
+
+    if (newerMessages && newerMessages.length > 0) {
+      // A newer message exists — skip AI for this one; the newer handler will respond
+      return;
+    }
+  }
 
   // 6. Load tenant limits and context (parallel) — includes AI Assistant knowledge config
   const tenantLimits = await getTenantLimits(typedTenant.id);
