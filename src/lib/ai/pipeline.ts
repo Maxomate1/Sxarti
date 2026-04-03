@@ -50,7 +50,25 @@ export interface IncomingMessage {
   attachments?: IncomingAttachment[];
 }
 
-const DEBOUNCE_MS = 3000;
+const DEBOUNCE_MS = 1500;
+
+/** Check if this message is still the latest customer message in the conversation */
+async function isLatestCustomerMessage(
+  supabase: ReturnType<typeof createAdminClient>,
+  conversationId: string,
+  messageId: string,
+): Promise<boolean> {
+  const { data: latest } = await supabase
+    .from("messages")
+    .select("id")
+    .eq("conversation_id", conversationId)
+    .eq("sender", "customer")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  return latest?.id === messageId;
+}
 
 function generateOrderNumber(): string {
   const num = Math.floor(10000 + Math.random() * 90000);
@@ -197,23 +215,16 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
     .select("id, created_at")
     .single();
 
-  // 5b. Debounce — wait for rapid-fire messages to settle before calling AI
+  if (!insertedMsg) return;
+
+  // 5b. Short debounce — let rapid-fire messages settle before checking
   await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS));
 
-  // Check if a newer customer message arrived during the wait
-  if (insertedMsg) {
-    const { data: newerMessages } = await supabase
-      .from("messages")
-      .select("id")
-      .eq("conversation_id", typedConv.id)
-      .eq("sender", "customer")
-      .gt("created_at", insertedMsg.created_at)
-      .limit(1);
-
-    if (newerMessages && newerMessages.length > 0) {
-      // A newer message exists — skip AI for this one; the newer handler will respond
-      return;
-    }
+  // 5c. "Latest wins" check — only the newest message handler proceeds
+  if (
+    !(await isLatestCustomerMessage(supabase, typedConv.id, insertedMsg.id))
+  ) {
+    return; // a newer message arrived — that handler will process all messages
   }
 
   // 6. Load tenant limits and context (parallel) — includes AI Assistant knowledge config
@@ -353,6 +364,15 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
     const fallback =
       "ბოდიში, ტექნიკური შეფერხება მოხდა. ოპერატორი მალე დაგეხმარებათ.";
     await sendResponseToCustomer(typedTenant, incoming, fallback);
+    return;
+  }
+
+  // 10b. Post-AI "latest wins" check — if a new message arrived during AI generation,
+  // discard this response. The newer message's handler will generate a fresh response
+  // with the full conversation history (including all accumulated messages).
+  if (
+    !(await isLatestCustomerMessage(supabase, typedConv.id, insertedMsg.id))
+  ) {
     return;
   }
 
