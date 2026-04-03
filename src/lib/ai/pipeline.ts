@@ -50,7 +50,7 @@ export interface IncomingMessage {
   attachments?: IncomingAttachment[];
 }
 
-const DEBOUNCE_MS = 2500;
+const DEBOUNCE_MS = 3000;
 
 function generateOrderNumber(): string {
   const num = Math.floor(10000 + Math.random() * 90000);

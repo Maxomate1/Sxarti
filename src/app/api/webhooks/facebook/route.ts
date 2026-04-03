@@ -38,10 +38,12 @@ export async function POST(request: NextRequest) {
 
   const messages = parseWebhookPayload(body);
 
-  // Process each message — catch per-message to avoid one failure blocking others
-  for (const msg of messages) {
-    try {
-      await processMessage({
+  // Process all messages in parallel so debounce works correctly —
+  // sequential processing would cause each message to fully complete (including
+  // debounce wait) before the next one is stored, defeating the debounce check.
+  await Promise.allSettled(
+    messages.map((msg) =>
+      processMessage({
         platform: "messenger",
         platformUserId: msg.senderId,
         pageId: msg.recipientId,
@@ -53,11 +55,11 @@ export async function POST(request: NextRequest) {
             type: a.type as "image" | "audio" | "video" | "file",
             url: a.payload!.url!,
           })),
-      });
-    } catch (error) {
-      console.error("Error processing Facebook message:", error);
-    }
-  }
+      }).catch((error) => {
+        console.error("Error processing Facebook message:", error);
+      }),
+    ),
+  );
 
   // Always return 200 to Facebook (otherwise it retries)
   return NextResponse.json({ status: "ok" });

@@ -38,9 +38,10 @@ export async function POST(request: NextRequest) {
 
   const messages = parseInstagramWebhookPayload(body);
 
-  for (const msg of messages) {
-    try {
-      await processMessage({
+  // Process all messages in parallel so debounce works correctly
+  await Promise.allSettled(
+    messages.map((msg) =>
+      processMessage({
         platform: "instagram",
         platformUserId: msg.senderId,
         pageId: msg.recipientId,
@@ -52,11 +53,11 @@ export async function POST(request: NextRequest) {
             type: a.type as "image" | "audio" | "video" | "file",
             url: a.payload!.url!,
           })),
-      });
-    } catch (error) {
-      console.error("Error processing Instagram message:", error);
-    }
-  }
+      }).catch((error) => {
+        console.error("Error processing Instagram message:", error);
+      }),
+    ),
+  );
 
   return NextResponse.json({ status: "ok" });
 }
