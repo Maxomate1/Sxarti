@@ -331,6 +331,8 @@ flag_problematic-ის გამოყენებისას გააგრ�
 - info_collection ეტაპზე აუცილებლად გამოიყენე update_customer_info მომხმარებლის სახელის, ტელეფონის, მისამართის და ქალაქის შესანახად. create_order ვერ შესრულდება customer_info-ს გარეშე.
 - delivery_calculation ეტაპზე აუცილებლად გამოიყენე set_delivery_zone მომხმარებლის ქალაქის/მისამართის მიხედვით შესაბამისი ზონის ID-ით. create_order გამოიყენებს ზონის საფასურს.
 - create_order ავტომატურად ჩამოწერს მარაგს — ცალკე decrement_stock არ გამოიყენო create_order-თან ერთად.
+- actions მასივში მოქმედებების თანმიმდევრობას აქვს მნიშვნელობა: ჯერ update_customer_info, შემდეგ set_delivery_zone, შემდეგ create_order, ბოლოს update_stage. create_order ყოველთვის უნდა იყოს update_customer_info-ს და set_delivery_zone-ს შემდეგ.
+- create_order-ს წინაპირობები: კალათა არ უნდა იყოს ცარიელი, customer_info-ში სახელი, ტელეფონი და მისამართი უნდა იყოს შევსებული. თუ რომელიმე აკლია — ჯერ შეაგროვე ინფორმაცია, შემდეგ შექმენი შეკვეთა.
 - decrement_stock მხოლოდ ისეთ შემთხვევაში გამოიყენე, როცა მარაგის ჩამოწერა create_order-ის გარეშე გჭირდება.`);
 
   return sections.join("\n\n");
