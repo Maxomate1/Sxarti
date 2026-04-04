@@ -50,7 +50,7 @@ export interface IncomingMessage {
   attachments?: IncomingAttachment[];
 }
 
-const DEBOUNCE_MS = 1500;
+const DEBOUNCE_MS = 3000;
 
 /** Check if this message is still the latest customer message in the conversation */
 async function isLatestCustomerMessage(
@@ -68,6 +68,33 @@ async function isLatestCustomerMessage(
     .single();
 
   return latest?.id === messageId;
+}
+
+/** Merge consecutive rapid-fire customer messages into single logical messages.
+ * When a customer sends "გამარჯობა" → "რა პროდუქტები" → "გაქვთ" within seconds,
+ * the AI should see them as one sentence: "გამარჯობა რა პროდუქტები გაქვთ" */
+function mergeRapidCustomerMessages(msgs: Message[]): Message[] {
+  const MERGE_WINDOW_MS = 10_000; // merge messages within 10 seconds
+  const result: Message[] = [];
+
+  for (const msg of msgs) {
+    const prev = result[result.length - 1];
+    if (
+      prev &&
+      msg.sender === "customer" &&
+      prev.sender === "customer" &&
+      new Date(msg.created_at).getTime() - new Date(prev.created_at).getTime() <
+        MERGE_WINDOW_MS
+    ) {
+      // Merge into previous message
+      prev.content = `${prev.content} ${msg.content}`;
+    } else {
+      // Push a shallow copy so we don't mutate the original
+      result.push({ ...msg });
+    }
+  }
+
+  return result;
 }
 
 function generateOrderNumber(): string {
@@ -217,7 +244,9 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
 
   if (!insertedMsg) return;
 
-  // 5b. Short debounce — let rapid-fire messages settle before checking
+  // 5b. Debounce — let rapid-fire messages settle before checking.
+  // Many users send sentences as multiple short messages (word-by-word).
+  // We wait, then verify we're still the latest, then wait once more to catch stragglers.
   await new Promise((resolve) => setTimeout(resolve, DEBOUNCE_MS));
 
   // 5c. "Latest wins" check — only the newest message handler proceeds
@@ -225,6 +254,14 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
     !(await isLatestCustomerMessage(supabase, typedConv.id, insertedMsg.id))
   ) {
     return; // a newer message arrived — that handler will process all messages
+  }
+
+  // 5d. Second settling check — catch late-arriving fragments
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  if (
+    !(await isLatestCustomerMessage(supabase, typedConv.id, insertedMsg.id))
+  ) {
+    return;
   }
 
   // 6. Load tenant limits and context (parallel) — includes AI Assistant knowledge config
@@ -325,8 +362,9 @@ export async function processMessage(incoming: IncomingMessage): Promise<void> {
     bundles,
   });
 
-  // 8. Convert history to Gemini Content[]
-  const conversationHistory: Content[] = messages
+  // 8. Merge rapid-fire customer messages, then convert to Gemini Content[]
+  const mergedMessages = mergeRapidCustomerMessages(messages);
+  const conversationHistory: Content[] = mergedMessages
     .filter((m) => m.sender !== "human")
     .map((m) => ({
       role: m.sender === "customer" ? "user" : "model",
