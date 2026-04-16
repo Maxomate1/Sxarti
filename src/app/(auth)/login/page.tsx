@@ -117,7 +117,7 @@ export default function LoginPage() {
 
         <div className="text-right">
           <Link
-            href="#"
+            href="/forgot-password"
             className="text-sm text-primary hover:underline underline-offset-4"
           >
             პაროლი დაგავიწყდა?
